@@ -4,10 +4,10 @@
 % Also Change the folder path, as well the default is relative pathing 
 
 % Broadcast ephemeris
-nav_file = "testing/site0900.01n"; 
+nav_file = "tools/hcku2500.24n"; 
 
 % Observation data
-obs_file = "testing/site0900.01o"; 
+obs_file = "tools/hcku2500.24o"; 
 
 % Compute position
 [ecef, wgs84] = computeGPSPosition(nav_file, obs_file);

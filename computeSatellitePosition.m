@@ -14,9 +14,9 @@ function GPS = computeSatellitePosition(Nav, Sate_Row, Obs, RxClockError)
     t_emission = Obs.C1 / c;
     t = Obs.Time_in_GPS - t_emission - RxClockError;
     tk = (t - Nav(Sate_Row).Toe_time);
-    if (tk > half_week)
+    if tk > half_week
         tk = tk - (2 * half_week);
-    elseif (tk < -half_week)
+    elseif tk < -half_week
         tk = tk + (2 * half_week);
     end
 

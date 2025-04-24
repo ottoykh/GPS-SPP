@@ -23,6 +23,7 @@ function [GPS_Receiver, wgs84_coord] = computeGPSPosition(navFile, obsFile)
     % Refine receiver position
     Epoch_OBS = length(Obs);
     No_Epoch_Nav = length(Nav);
+    RowOfSamePRN = zeros(100, Epoch_OBS); % Preallocate for safety
     while (abs(dx(1,1)) + abs(dx(2,1)) + abs(dx(3,1)) + abs(RxClockDiff)) > 10e-8
         for i = 1:Epoch_OBS
             % Find matching PRNs
@@ -33,11 +34,11 @@ function [GPS_Receiver, wgs84_coord] = computeGPSPosition(navFile, obsFile)
                     q = q + 1;
                 end
             end
-            No_RowOfSamePRN = sum(RowOfSamePRN ~= 0);
+            No_RowOfSamePRN = sum(RowOfSamePRN(:,i) ~= 0);
 
             % Find closest GPS time (4-hour validity)
             Difference_Minimum = 4 * 60 * 60;
-            for m = 1:No_RowOfSamePRN(i)
+            for m = 1:No_RowOfSamePRN
                 Difference_GPSTime = abs(Compare_Obs_GPSTime(1,i) - Compare_Nav_GPSTime(1,RowOfSamePRN(m,i)));
                 if (Difference_GPSTime < Difference_Minimum)
                     Difference_Minimum = Difference_GPSTime;
@@ -47,7 +48,7 @@ function [GPS_Receiver, wgs84_coord] = computeGPSPosition(navFile, obsFile)
 
             % Compute satellite position and apply corrections
             GPS(i,:) = computeSatellitePosition(Nav, Sate_Row, Obs(i), RxClockError);
-            [GPS_Coordinate(i,:), SxClockError(i)] = applyCorrections(GPS(i,:), Obs(i), Nav(Sate_Row), RxClockError);
+            [GPS_Coordinate(i,:), SxClockError(i)] = applyCorrections(GPS(i,:), Obs(i), Nav(Sate_Row), RxClockError, Approx_X, Approx_Y, Approx_Z, Nav(1).ionAlpha, Nav(1).ionBeta);
 
             % Compute receiver position components
             [rho(i), B(i,:), f(i,1)] = computeReceiverPosition(GPS(i,:), Approximate_Coor, Obs(i), SxClockError(i));

@@ -1,14 +1,61 @@
 function Nav = readNavData(navFile)
     % Read RINEX navigation file
     NavData = fopen(navFile, 'r');
-    % Skip header until "END OF HEADER"
+    if NavData == -1
+        error('Cannot open navigation file: %s', navFile);
+    end
+
+    % Initialize Klobuchar coefficients
+    ionAlpha = [0, 0, 0, 0]; % Default: zero coefficients
+    ionBeta = [72000, 0, 0, 0]; % Default: minimum period
+
+    % Read header and parse ION ALPHA and ION BETA
     Read_NavLine = fgetl(NavData);
     while ischar(Read_NavLine)
-        if contains(Read_NavLine, 'END OF HEADER')
+        if contains(Read_NavLine, 'ION ALPHA')
+            % Debug: Print raw line
+            fprintf('ION ALPHA line: %s\n', Read_NavLine);
+            % Replace 'D' with 'E' for scientific notation
+            line = strrep(Read_NavLine(5:end), 'D', 'E');
+            try
+                % Parse four exponential numbers
+                values = sscanf(line, '%e %e %e %e');
+                if length(values) == 4
+                    ionAlpha = values';
+                else
+                    warning('Invalid ION ALPHA format; using default [0, 0, 0, 0]');
+                    ionAlpha = [0, 0, 0, 0];
+                end
+            catch
+                warning('Failed to parse ION ALPHA; using default [0, 0, 0, 0]');
+                ionAlpha = [0, 0, 0, 0];
+            end
+        elseif contains(Read_NavLine, 'ION BETA')
+            % Debug: Print raw line
+            fprintf('ION BETA line: %s\n', Read_NavLine);
+            % Replace 'D' with 'E' for scientific notation
+            line = strrep(Read_NavLine(5:end), 'D', 'E');
+            try
+                values = sscanf(line, '%e %e %e %e');
+                if length(values) == 4
+                    ionBeta = values';
+                else
+                    warning('Invalid ION BETA format; using default [72000, 0, 0, 0]');
+                    ionBeta = [72000, 0, 0, 0];
+                end
+            catch
+                warning('Failed to parse ION BETA; using default [72000, 0, 0, 0]');
+                ionBeta = [72000, 0, 0, 0];
+            end
+        elseif contains(Read_NavLine, 'END OF HEADER')
             break;
         end
         Read_NavLine = fgetl(NavData);
     end
+
+    % Debug: Print parsed coefficients
+    fprintf('Parsed ionAlpha: %s\n', mat2str(ionAlpha));
+    fprintf('Parsed ionBeta: %s\n', mat2str(ionBeta));
 
     No_Epoch_Nav = 1;
     while ischar(Read_NavLine)
@@ -32,6 +79,8 @@ function Nav = readNavData(navFile)
         Nav(No_Epoch_Nav).SV_Clock_Bias = str2num(Read_NavLine(23:41));
         Nav(No_Epoch_Nav).SV_Clock_drift = str2num(Read_NavLine(42:60));
         Nav(No_Epoch_Nav).SV_Clock_drift_rate = str2num(Read_NavLine(61:79));
+        Nav(No_Epoch_Nav).ionAlpha = ionAlpha; % Store Klobuchar coefficients
+        Nav(No_Epoch_Nav).ionBeta = ionBeta;
         Read_NavLine = fgetl(NavData);
         % Parse orbit data - Block 2
         Nav(No_Epoch_Nav).IODE = str2num(Read_NavLine(4:22));
