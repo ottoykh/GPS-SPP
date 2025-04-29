@@ -69,11 +69,11 @@ function [GPS_Receiver, wgs84_coord] = computeGPSPosition(navFile, obsFile)
     GPS_Receiver(3,1) = Approximate_Coor(3);
     GPS_Receiver(4,1) = Approximate_Coor(4);
 
-    fprintf('ECEF Position: X=%.2f, Y=%.2f, Z=%.2f\n', GPS_Receiver(1,1), GPS_Receiver(2,1), GPS_Receiver(3,1));
+    fprintf('ECEF Position: X=%.5f, Y=%.5f, Z=%.5f\n', GPS_Receiver(1,1), GPS_Receiver(2,1), GPS_Receiver(3,1));
 
     % Convert to WGS84
     wgs84_coord = convertECEFtoWGS84(GPS_Receiver(1,1), GPS_Receiver(2,1), GPS_Receiver(3,1));
-    fprintf('WGS84 Position: Lon=%.6f, Lat=%.6f, Alt=%.2f\n', wgs84_coord(1), wgs84_coord(2), wgs84_coord(3));
+    fprintf('WGS84 Position: Lon=%.8f, Lat=%.8f, Alt=%.3f\n', wgs84_coord(1), wgs84_coord(2), wgs84_coord(3));
 
     % Plot WGS84 position
     plotWGS84Position(wgs84_coord);
