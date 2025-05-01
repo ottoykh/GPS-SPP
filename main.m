@@ -4,10 +4,13 @@
 % Also Change the folder path, as well the default is relative pathing 
 
 % Broadcast ephemeris
-nav_file = "tools/hkcl110a.25n"; 
+nav_file = "testing/site0900.01n"; 
 
 % Observation data
-obs_file = "tools/hkcl110a.25o"; 
+obs_file = "testing/site0900.01o";
+
+% Elevation mask (degrees) to reduce the multipath signal effect 
+elevation_angle_cutoff = 0; % degree
 
 % Compute position
-[ecef, wgs84] = computeGPSPosition(nav_file, obs_file);
+[ecef, wgs84] = computeGPSPosition(nav_file, obs_file, elevation_angle_cutoff);
